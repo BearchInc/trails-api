@@ -21,7 +21,7 @@ delete-branches:
 	git branch | grep -v master | xargs -I {} git branch -D {}
 
 serve:
-	goapp serve --host 0.0.0.0 app/app.yaml
+	goapp serve --host 0.0.0.0 app/app-staging.yaml
 
 # Deployment tasks
 deploy:

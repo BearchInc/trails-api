@@ -4,6 +4,8 @@ import (
 	"github.com/bearchinc/trails-api/middlewares"
 	"github.com/martini-contrib/render"
 	"github.com/go-martini/martini"
+	"github.com/bearchinc/trails-api/controllers"
+	"github.com/martini-contrib/binding"
 )
 
 func Routes() http.Handler {
@@ -17,6 +19,14 @@ func Routes() http.Handler {
 	router.Use(middlewares.AppengineContextProvider)
 	router.Use(middlewares.LoggerProvider)
 	router.Use(middlewares.AppxProvider)
+
+	router.Post("/login", binding.Bind(controllers.LoginForm{}), controllers.Login)
+
+	router.Group("/account", func(r martini.Router){
+		r.Get("/registerDropbox", controllers.RegisterDropbox)
+	}, middlewares.AuthorizationAccountProvider)
+
+
 
 	return router
 }
