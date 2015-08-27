@@ -15,3 +15,10 @@ type Trail struct {
 	Location 	time.Location	`json:"location"`
 	Bytes		int				`json:"bytes"`
 }
+
+func (account *Trail) KeySpec() *appx.KeySpec {
+	return &appx.KeySpec{
+		Kind: 		"Trails",
+		Incomplete: true,
+	}
+}

@@ -14,3 +14,10 @@ type Authorization struct {
 	AccessToken			string					`json:"access_token"`
 	UserId				string					`json:"user_id"`
 }
+
+func (account *Authorization) KeySpec() *appx.KeySpec {
+	return &appx.KeySpec{
+		Kind: 		"Authorizations",
+		Incomplete: true,
+	}
+}
