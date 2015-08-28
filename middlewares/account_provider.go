@@ -26,7 +26,7 @@ func AuthorizationAccountProvider(c appengine.Context, logger *Logger, request *
 		return
 	}
 
-	martiniContext.Map(currentAccount)
+	martiniContext.Map(&currentAccount)
 }
 
 func extractAuthToken(request *http.Request) string {
