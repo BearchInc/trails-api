@@ -9,14 +9,14 @@ import (
 )
 
 type LoginForm struct {
-	AccountId string `json:"account_id" binding:"required"`
+	Id string `json:"id" binding:"required"`
 }
 
 func Login(render render.Render, loginForm LoginForm, logger *middlewares.Logger, db *appx.Datastore, request *http.Request) {
 
 	context := appengine.NewContext(request)
 
-	existingAccount := models.Accounts.New(loginForm.AccountId)
+	existingAccount := models.Accounts.New(loginForm.Id)
 	err := db.Load(existingAccount)
 
 	if err == nil {
@@ -24,7 +24,7 @@ func Login(render render.Render, loginForm LoginForm, logger *middlewares.Logger
 		return
 	}
 
-	account := models.Accounts.NewWithAuthToken(loginForm.AccountId, context)
+	account := models.Accounts.NewWithAuthToken(loginForm.Id, context)
 	if err = db.Save(account); err == nil {
 		render.JSON(http.StatusCreated, account)
 		return
