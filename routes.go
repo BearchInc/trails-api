@@ -1,11 +1,12 @@
 package trails
+
 import (
-	"net/http"
-	"github.com/bearchinc/trails-api/middlewares"
-	"github.com/martini-contrib/render"
-	"github.com/go-martini/martini"
 	"github.com/bearchinc/trails-api/controllers"
+	"github.com/bearchinc/trails-api/middlewares"
+	"github.com/go-martini/martini"
 	"github.com/martini-contrib/binding"
+	"github.com/martini-contrib/render"
+	"net/http"
 )
 
 func Routes() http.Handler {
@@ -22,11 +23,10 @@ func Routes() http.Handler {
 
 	router.Post("/login", binding.Bind(controllers.LoginForm{}), controllers.Login)
 
-	router.Group("/account", func(r martini.Router){
+	router.Group("/account", func(r martini.Router) {
 		r.Get("/registerDropbox", controllers.RegisterDropbox)
+		r.Get("/update", controllers.RegisterDropbox)
 	}, middlewares.AuthorizationAccountProvider)
-
-
 
 	return router
 }

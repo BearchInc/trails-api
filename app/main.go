@@ -1,7 +1,8 @@
 package app
+
 import (
-	"net/http"
 	"github.com/bearchinc/trails-api"
+	"net/http"
 )
 
 func init() {

@@ -1,11 +1,11 @@
 package controllers
+
 import (
-	"github.com/martini-contrib/render"
 	"github.com/bearchinc/trails-api/middlewares"
-	"github.com/drborges/appx"
-	"net/http"
 	"github.com/bearchinc/trails-api/models"
-	"appengine"
+	"github.com/drborges/appx"
+	"github.com/martini-contrib/render"
+	"net/http"
 )
 
 type LoginForm struct {
@@ -13,24 +13,18 @@ type LoginForm struct {
 }
 
 func Login(render render.Render, loginForm LoginForm, logger *middlewares.Logger, db *appx.Datastore, request *http.Request) {
-
-	context := appengine.NewContext(request)
-
-	existingAccount := models.Accounts.New(loginForm.Id)
-	err := db.Load(existingAccount)
-
-	if err == nil {
+	existingAccount := &models.Account{ Id: loginForm.Id }
+	if err := db.Load(existingAccount); err == nil {
 		render.JSON(http.StatusOK, existingAccount)
 		return
 	}
 
-	account := models.Accounts.NewWithAuthToken(loginForm.Id, context)
-	if err = db.Save(account); err == nil {
-		render.JSON(http.StatusCreated, account)
+	account := models.Accounts.New(loginForm.Id)
+	if err := db.Save(account); err != nil {
+		logger.Errorf("Error while trying to login for account by id: %v", err.Error())
+		render.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
 
-	logger.Errorf("Error while trying to login for account by id: %v", err.Error())
-	render.JSON(http.StatusBadRequest, err.Error())
+	render.JSON(http.StatusCreated, account)
 }
-

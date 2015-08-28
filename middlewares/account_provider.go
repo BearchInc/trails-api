@@ -1,12 +1,13 @@
 package middlewares
+
 import (
-	"strings"
+	"appengine"
 	"encoding/base64"
-	"net/http"
 	"github.com/bearchinc/trails-api/models"
 	"github.com/go-martini/martini"
-	"appengine"
 	"github.com/martini-contrib/render"
+	"net/http"
+	"strings"
 )
 
 func AuthorizationAccountProvider(c appengine.Context, request *http.Request, render render.Render, martiniContext martini.Context) {
