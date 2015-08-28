@@ -8,9 +8,10 @@ import (
 	"github.com/martini-contrib/render"
 	"net/http"
 	"strings"
+	"github.com/drborges/appx"
 )
 
-func AuthorizationAccountProvider(c appengine.Context, request *http.Request, render render.Render, martiniContext martini.Context) {
+func AuthorizationAccountProvider(c appengine.Context, logger *Logger, request *http.Request, render render.Render, martiniContext martini.Context, appx *appx.Datastore) {
 	authToken := extractAuthToken(request)
 
 	if authToken == "" {
@@ -18,9 +19,11 @@ func AuthorizationAccountProvider(c appengine.Context, request *http.Request, re
 		return
 	}
 
-	currentAccount := models.Accounts.ByAuthToken(authToken)
-	if currentAccount != nil {
+	var currentAccount models.Account
+	if err := appx.Query(models.Accounts.ByAuthToken(authToken)).Result(&currentAccount); err != nil {
+		logger.Errorf("%v", err)
 		render.Status(http.StatusUnauthorized)
+		return
 	}
 
 	martiniContext.Map(currentAccount)

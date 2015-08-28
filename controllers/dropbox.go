@@ -6,6 +6,10 @@ import (
 	"github.com/martini-contrib/render"
 )
 
-func RegisterDropbox(render render.Render, logger *middlewares.Logger, appx *appx.Datastore) {
+type RegisterDropboxForm struct {
+	AccessToken		string		`json:"access_token" binding:"required"`
+}
 
+func RegisterDropbox(render render.Render, logger *middlewares.Logger, appx *appx.Datastore) {
+	logger.Infof("You are in register dropbox")
 }

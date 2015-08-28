@@ -24,8 +24,8 @@ func Routes() http.Handler {
 	router.Post("/login", binding.Bind(controllers.LoginForm{}), controllers.Login)
 
 	router.Group("/account", func(r martini.Router) {
-		r.Get("/registerDropbox", controllers.RegisterDropbox)
-		r.Get("/update", controllers.RegisterDropbox)
+		r.Post("/registerDropbox", binding.Bind(controllers.RegisterDropboxForm{}), controllers.RegisterDropbox)
+		r.Post("/update", controllers.RegisterDropbox)
 	}, middlewares.AuthorizationAccountProvider)
 
 	return router
