@@ -27,8 +27,8 @@ func (account *Account) KeySpec() *appx.KeySpec {
 	}
 }
 
-func (model *Account) HasKey() bool {
-	return model.Id != ""
+func (account *Account) HasKey() bool {
+	return account.Id != ""
 }
 
 var Accounts = struct {
@@ -48,4 +48,8 @@ var Accounts = struct {
 
 		return account
 	},
+}
+
+func (account *Account) Update(db *appx.Datastore) {
+
 }
