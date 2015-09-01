@@ -1,4 +1,5 @@
 github.com/drborges/appx
+github.com/drborges/rivers
 github.com/go-martini/martini
 github.com/martini-contrib/render
 github.com/martini-contrib/binding

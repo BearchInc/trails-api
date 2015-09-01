@@ -16,6 +16,7 @@ build:
 
 update:
 	GIGO_GO=goapp gigo install -r requirements.txt
+	git clone git@github.com:BearchInc/dropbox.git $(GOPATH)/src/github.com/stacktic/dropbox
 
 delete-branches:
 	git branch | grep -v master | xargs -I {} git branch -D {}
