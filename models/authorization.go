@@ -3,6 +3,7 @@ package models
 import (
 	"github.com/drborges/appx"
 	"strconv"
+	"appengine/datastore"
 )
 
 type AuthorizationType int
@@ -20,13 +21,18 @@ type Authorization struct {
 
 	AuthorizationType AuthorizationType `json:"authorization_type"`
 	AccessToken       string            `json:"access_token"`
-	UserId				string			`json:"user_id"`
+	LastCursor        string
+	UserId            string            `json:"user_id"`
 }
 
-func (account *Authorization) KeySpec() *appx.KeySpec {
+func (authorization *Authorization) KeySpec() *appx.KeySpec {
 	return &appx.KeySpec{
 		Kind:       "Authorizations",
-		Incomplete: true,
-		StringID: account.UserId,
+		StringID: authorization.UserId,
 	}
 }
+
+func (authorization *Authorization) Query() *datastore.Query {
+	return datastore.NewQuery(authorization.KeySpec().Kind)
+}
+

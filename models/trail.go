@@ -8,18 +8,37 @@ import (
 type Trail struct {
 	appx.Model
 
+	Revision    string
 	Path        string `json:"path"`
 	ThumbExists bool   `json:"thumb_exists"`
 
-	MimeType  string        `json:"mime_type"`
-	CreatedAt time.Time     `json:"created_at"`
-	Location  time.Location `json:"location"`
-	Bytes     int           `json:"bytes"`
+	MimeType    string    `json:"mime_type"`
+	CreatedAt   time.Time `json:"created_at"`
+	Location    []string    `json:"location"`
+	Bytes       int64        `json:"bytes"`
+
+	Type        TrailType
+
+	Likeness    LikenessType
 }
 
-func (account *Trail) KeySpec() *appx.KeySpec {
+type LikenessType int
+const (
+	NotEvaluated    LikenessType = iota
+	LikedIt
+	DislikedIt
+)
+
+type TrailType int
+const (
+	PhotoTrail    TrailType = iota
+	VideoTrail
+)
+
+func (trail *Trail) KeySpec() *appx.KeySpec {
 	return &appx.KeySpec{
 		Kind:       "Trails",
 		Incomplete: true,
+		StringID: trail.Revision,
 	}
 }

@@ -6,6 +6,8 @@ import (
 	"github.com/martini-contrib/render"
 	"github.com/bearchinc/trails-api/models"
 	"net/http"
+	"github.com/bearchinc/trails-api/services"
+	"github.com/drborges/rivers"
 )
 
 type RegisterDropboxForm struct {
@@ -32,4 +34,14 @@ func RegisterDropbox(render render.Render, registerDropboxForm RegisterDropboxFo
 	}
 
 	render.Status(http.StatusOK)
+}
+
+func GetDropboxDelta(req *http.Request, ds *appx.Datastore, account *models.Account) {
+	dropboxAuth := &models.Authorization{}
+	rivers.DebugEnabled = true
+	if err := ds.Load(dropboxAuth); err != nil {
+		panic(err)
+	}
+
+	services.DropboxDeltaFirstTime(req, ds, dropboxAuth)
 }

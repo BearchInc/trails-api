@@ -8,7 +8,6 @@ import (
 
 type Account struct {
 	appx.Model
-	keySpec *appx.KeySpec
 
 	Id string `json:"id"`
 
@@ -25,10 +24,6 @@ func (account *Account) KeySpec() *appx.KeySpec {
 		StringID:  account.Id,
 		HasParent: false,
 	}
-}
-
-func (account *Account) HasKey() bool {
-	return account.Id != ""
 }
 
 var Accounts = struct {

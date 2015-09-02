@@ -2,7 +2,8 @@ package controllers
 import (
 	"github.com/drborges/appx"
 	"github.com/bearchinc/trails-api/models"
-	"github.com/gin-gonic/gin/render"
+	"github.com/martini-contrib/render"
+	"net/http"
 )
 
 type AccountUpdateForm struct {
@@ -16,5 +17,9 @@ func UpdateAccount(render render.Render, accountUpdateForm AccountUpdateForm, ac
 	account.LastName = accountUpdateForm.LastName
 	account.Email = accountUpdateForm.Email
 
-	db.Save(account)
+	if err := db.Save(account); err != nil {
+		render.JSON(http.StatusInternalServerError, "Unable to register dropbox")
+	}
+
+	render.Status(http.StatusOK)
 }

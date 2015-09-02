@@ -7,7 +7,6 @@ import (
 	"github.com/martini-contrib/binding"
 	"github.com/martini-contrib/render"
 	"net/http"
-	"github.com/bearchinc/trails-api/services"
 )
 
 func Routes() http.Handler {
@@ -27,11 +26,11 @@ func Routes() http.Handler {
 	router.Group("/account", func(r martini.Router) {
 		r.Post("/registerDropbox", binding.Bind(controllers.RegisterDropboxForm{}), controllers.RegisterDropbox)
 		r.Post("/update", binding.Bind(controllers.AccountUpdateForm{}), controllers.UpdateAccount)
-
+		router.Get("/delta", controllers.GetDropboxDelta)
 
 	}, middlewares.AuthorizationAccountProvider)
 
-	router.Get("/delta", services.DropboxDelta)
+
 
 	return router
 }

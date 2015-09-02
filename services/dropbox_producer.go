@@ -7,23 +7,23 @@ import (
 )
 
 type DropboxBuilder struct {
-	context stream.Context
+	Context stream.Context
+	CurrentCursor string
 }
 
-func (b *DropboxBuilder) DropboxProducer(appengineContext context.Context, dropboxAccessToken string, cursor string) stream.Producer {
+func (b *DropboxBuilder) DropboxProducer(db *dropbox.Dropbox) stream.Producer {
 	return &producers.Observable{
-		Context: b.context,
+		Context: b.Context,
 		Capacity: 1000,
 		Emit: func(w stream.Writable) {
 			for {
-				db := dropboxClient(appengineContext, dropboxAccessToken)
-				dp, err := db.Delta(cursor, "")
+				dp, err := db.Delta(b.CurrentCursor, "")
 				if err != nil {
 					panic(err)
 				}
 
 				select {
-				case <-b.context.Closed():
+				case <-b.Context.Closed():
 					return
 				default:
 
@@ -37,6 +37,9 @@ func (b *DropboxBuilder) DropboxProducer(appengineContext context.Context, dropb
 					}
 				}
 
+
+				b.CurrentCursor = dp.Cursor.Cursor
+
 				println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
 				println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
 				println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
@@ -48,7 +51,6 @@ func (b *DropboxBuilder) DropboxProducer(appengineContext context.Context, dropb
 					return
 				}
 
-				cursor = dp.Cursor.Cursor
 
 			}
 		},
