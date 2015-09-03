@@ -26,7 +26,11 @@ func Routes() http.Handler {
 	router.Group("/account", func(r martini.Router) {
 		r.Post("/registerDropbox", binding.Bind(controllers.RegisterDropboxForm{}), controllers.RegisterDropbox)
 		r.Post("/update", binding.Bind(controllers.AccountUpdateForm{}), controllers.UpdateAccount)
-		router.Get("/delta", controllers.GetDropboxDelta)
+
+		r.Group("/dropbox", func(r martini.Router) {
+			r.Post("/init", controllers.DropboxInit)
+			r.Post("/delta", controllers.DropboxDelta)
+		}, middlewares.ExternalServiceAuthorizationProvider)
 
 	}, middlewares.AuthorizationAccountProvider)
 

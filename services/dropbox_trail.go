@@ -12,7 +12,9 @@ import (
 	"github.com/drborges/appx"
 )
 
-func DropboxDelta(req *http.Request, ds *appx.Datastore, authorization *models.Authorization) {
+func DropboxDelta(req *http.Request, ds *appx.Datastore, authorization *models.Authorization, existingItem stream.PredicateFn) {
+	rivers.DebugEnabled = true
+
 	steamContext := rivers.NewContext()
 	dropboxClient := dropboxClient(newappengine.NewContext(req), authorization.AccessToken)
 	builder := DropboxDeltaProducerBuilder{Context: steamContext, Client: dropboxClient, CurrentCursor: authorization.LastCursor}
@@ -21,7 +23,7 @@ func DropboxDelta(req *http.Request, ds *appx.Datastore, authorization *models.A
 				From(builder.Build()).
 				Drop(notMedia).
 				Map(toTrail).
-				Drop(alreadyCategorized(ds)).
+				Drop(existingItem).
 				BatchBy(&appx.DatastoreBatch{Size: 500}).
 				Each(saveBatch(ds)).
 				Drain()
@@ -29,30 +31,6 @@ func DropboxDelta(req *http.Request, ds *appx.Datastore, authorization *models.A
 	authorization.LastCursor = builder.CurrentCursor
 	ds.Save(authorization)
 
-	println(fmt.Sprintf("########## %v", err))
-}
-
-func DropboxInit(req *http.Request, ds *appx.Datastore, authorization *models.Authorization) {
-
-//	accessToken := "4GFHgi3IL2IAAAAAAAAAClnkF5SyJKu7pcC64oNVg18r6tecpNkJdyY7spxDw9hF"
-//	accessToken := "Cdn2AKzQYPwAAAAAAAAT-9gnnBDOG68LO1Oms5qW9-4WLme9TX02EHLiQLgR2qoA"
-
-	steamContext := rivers.NewContext()
-	dropboxClient := dropboxClient(newappengine.NewContext(req), authorization.AccessToken)
-	builder := DropboxDeltaProducerBuilder{Context: steamContext, Client: dropboxClient}
-
-	err := rivers.NewWith(builder.Context).
-					From(builder.Build()).
-					Drop(notMedia).
-					Map(toTrail).
-					BatchBy(&appx.DatastoreBatch{Size: 500}).
-					Each(saveBatch(ds)).
-					Drain()
-
-	authorization.LastCursor = builder.CurrentCursor
-	ds.Save(authorization)
-
-	println(fmt.Sprintf("########## %v", builder.CurrentCursor))
 	println(fmt.Sprintf("########## %v", err))
 }
 
@@ -64,16 +42,6 @@ func notMedia(data stream.T) bool {
 	return true
 }
 
-func alreadyCategorized(db *appx.Datastore) stream.PredicateFn {
-
-	return func(data stream.T) bool {
-		trail := data.(*models.Trail)
-
-		err := db.Load(trail)
-
-		return err == nil
-	}
-}
 
 func toTrail(data stream.T) stream.T {
 	item := data.(*dropbox.Entry)

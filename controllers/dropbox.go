@@ -7,7 +7,7 @@ import (
 	"github.com/bearchinc/trails-api/models"
 	"net/http"
 	"github.com/bearchinc/trails-api/services"
-	"github.com/drborges/rivers"
+	"github.com/drborges/rivers/stream"
 )
 
 type RegisterDropboxForm struct {
@@ -36,12 +36,26 @@ func RegisterDropbox(render render.Render, registerDropboxForm RegisterDropboxFo
 	render.Status(http.StatusOK)
 }
 
-func GetDropboxDelta(req *http.Request, ds *appx.Datastore, account *models.Account) {
-	dropboxAuth := &models.Authorization{}
-	rivers.DebugEnabled = true
-	if err := ds.Load(dropboxAuth); err != nil {
-		panic(err)
-	}
+func DropboxInit(req *http.Request, ds *appx.Datastore, account *models.Account, authorization *models.Authorization) {
+	services.DropboxDelta(req, ds, authorization, newItem(ds))
+}
 
-	services.DropboxInit(req, ds, dropboxAuth)
+func DropboxDelta(req *http.Request, ds *appx.Datastore, account *models.Account, authorization *models.Authorization) {
+	services.DropboxDelta(req, ds, authorization, alreadyCategorized(ds))
+}
+
+func newItem(ds *appx.Datastore) stream.PredicateFn {
+	return func(data stream.T) bool {
+		return false
+	}
+}
+
+func alreadyCategorized(ds *appx.Datastore) stream.PredicateFn {
+	return func(data stream.T) bool {
+		trail := data.(*models.Trail)
+
+		err := ds.Load(trail)
+
+		return err == nil
+	}
 }
