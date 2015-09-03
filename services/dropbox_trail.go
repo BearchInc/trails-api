@@ -41,10 +41,10 @@ func DropboxDeltaFirstTime(req *http.Request, ds *appx.Datastore, authorization 
 
 func notMedia(data stream.T) bool {
 	item := data.(*dropbox.Entry)
-	if strings.HasPrefix(item.MimeType, "image") { return true }
-	if strings.HasPrefix(item.MimeType, "video") { return true }
+	if strings.HasPrefix(item.MimeType, "image") { return false }
+	if strings.HasPrefix(item.MimeType, "video") { return false }
 
-	return false
+	return true
 }
 
 func toTrail(data stream.T) stream.T {
