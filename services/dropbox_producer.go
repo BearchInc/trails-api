@@ -6,29 +6,31 @@ import (
 	"golang.org/x/net/context"
 )
 
-type DropboxBuilder struct {
-	Context stream.Context
+
+type DropboxDeltaProducerBuilder struct {
+	Context       stream.Context
 	CurrentCursor string
+	Client        *dropbox.Dropbox
 }
 
-func (b *DropboxBuilder) DropboxProducer(db *dropbox.Dropbox) stream.Producer {
+func (producer *DropboxDeltaProducerBuilder) Build() stream.Producer {
 	return &producers.Observable{
-		Context: b.Context,
+		Context: producer.Context,
 		Capacity: 1000,
 		Emit: func(w stream.Writable) {
 			for {
-				dp, err := db.Delta(b.CurrentCursor, "")
+				page, err := producer.Client.Delta(producer.CurrentCursor, "")
 				if err != nil {
 					panic(err)
 				}
 
 				select {
-				case <-b.Context.Closed():
+				case <-producer.Context.Closed():
 					return
 				default:
 
-					println("@@@@@@ Before for with entries %+v", dp)
-					for _, deltaEntry := range dp.Entries {
+					println("@@@@@@ Before for with entries %+v", page)
+					for _, deltaEntry := range page.Entries {
 						if deltaEntry.Entry == nil {
 							//Handle deleted file later
 						} else {
@@ -38,7 +40,7 @@ func (b *DropboxBuilder) DropboxProducer(db *dropbox.Dropbox) stream.Producer {
 				}
 
 
-				b.CurrentCursor = dp.Cursor.Cursor
+				producer.CurrentCursor = page.Cursor.Cursor
 
 				println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
 				println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
@@ -46,7 +48,7 @@ func (b *DropboxBuilder) DropboxProducer(db *dropbox.Dropbox) stream.Producer {
 				println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
 				println("Next iteration............")
 
-				if dp.HasMore == false {
+				if page.HasMore == false {
 					println("------ No more entries!!-----")
 					return
 				}

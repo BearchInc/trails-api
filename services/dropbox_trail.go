@@ -12,30 +12,47 @@ import (
 	"github.com/drborges/appx"
 )
 
-func DropboxDeltaFirstTime(req *http.Request, ds *appx.Datastore, authorization *models.Authorization) {
+func DropboxDelta(req *http.Request, ds *appx.Datastore, authorization *models.Authorization) {
+	steamContext := rivers.NewContext()
+	dropboxClient := dropboxClient(newappengine.NewContext(req), authorization.AccessToken)
+	builder := DropboxDeltaProducerBuilder{Context: steamContext, Client: dropboxClient, CurrentCursor: authorization.LastCursor}
+
+	err := rivers.NewWith(builder.Context).
+				From(builder.Build()).
+				Drop(notMedia).
+				Map(toTrail).
+				Drop(alreadyCategorized(ds)).
+				BatchBy(&appx.DatastoreBatch{Size: 500}).
+				Each(saveBatch(ds)).
+				Drain()
+
+	authorization.LastCursor = builder.CurrentCursor
+	ds.Save(authorization)
+
+	println(fmt.Sprintf("########## %v", err))
+}
+
+func DropboxInit(req *http.Request, ds *appx.Datastore, authorization *models.Authorization) {
 
 //	accessToken := "4GFHgi3IL2IAAAAAAAAAClnkF5SyJKu7pcC64oNVg18r6tecpNkJdyY7spxDw9hF"
 //	accessToken := "Cdn2AKzQYPwAAAAAAAAT-9gnnBDOG68LO1Oms5qW9-4WLme9TX02EHLiQLgR2qoA"
 
 	steamContext := rivers.NewContext()
-	db := DropboxBuilder{Context: steamContext}
-
 	dropboxClient := dropboxClient(newappengine.NewContext(req), authorization.AccessToken)
+	builder := DropboxDeltaProducerBuilder{Context: steamContext, Client: dropboxClient}
 
-	producer := db.DropboxProducer(dropboxClient)
-
-	err := rivers.NewWith(steamContext).
-					From(producer).
+	err := rivers.NewWith(builder.Context).
+					From(builder.Build()).
 					Drop(notMedia).
 					Map(toTrail).
 					BatchBy(&appx.DatastoreBatch{Size: 500}).
 					Each(saveBatch(ds)).
 					Drain()
 
-	authorization.LastCursor = db.CurrentCursor
+	authorization.LastCursor = builder.CurrentCursor
 	ds.Save(authorization)
 
-	println(fmt.Sprintf("########## %v", db.CurrentCursor))
+	println(fmt.Sprintf("########## %v", builder.CurrentCursor))
 	println(fmt.Sprintf("########## %v", err))
 }
 
@@ -45,6 +62,17 @@ func notMedia(data stream.T) bool {
 	if strings.HasPrefix(item.MimeType, "video") { return false }
 
 	return true
+}
+
+func alreadyCategorized(db *appx.Datastore) stream.PredicateFn {
+
+	return func(data stream.T) bool {
+		trail := data.(*models.Trail)
+
+		err := db.Load(trail)
+
+		return err == nil
+	}
 }
 
 func toTrail(data stream.T) stream.T {

@@ -43,5 +43,5 @@ func GetDropboxDelta(req *http.Request, ds *appx.Datastore, account *models.Acco
 		panic(err)
 	}
 
-	services.DropboxDeltaFirstTime(req, ds, dropboxAuth)
+	services.DropboxInit(req, ds, dropboxAuth)
 }
