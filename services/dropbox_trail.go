@@ -26,7 +26,7 @@ func DropboxDeltaFirstTime(req *http.Request, ds *appx.Datastore, authorization 
 
 	err := rivers.NewWith(steamContext).
 					From(producer).
-					DropIf(notMedia).
+					Drop(notMedia).
 					Map(toTrail).
 					BatchBy(&appx.DatastoreBatch{Size: 500}).
 					Each(saveBatch(ds)).
