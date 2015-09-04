@@ -4,6 +4,7 @@ import (
 	"github.com/drborges/rivers/stream"
 	"github.com/drborges/rivers/producers"
 	"golang.org/x/net/context"
+	"fmt"
 )
 
 
@@ -19,17 +20,17 @@ func (producer *DropboxDeltaProducerBuilder) Build() stream.Producer {
 		Capacity: 1000,
 		Emit: func(w stream.Writable) {
 			for {
+				println(fmt.Sprint("Using Cursor value: %v", producer.CurrentCursor))
 				page, err := producer.Client.Delta(producer.CurrentCursor, "")
 				if err != nil {
 					panic(err)
 				}
 
 				select {
-				case <-producer.Context.Closed():
+				case <- producer.Context.Closed():
 					return
 				default:
 
-					println("@@@@@@ Before for with entries %+v", page)
 					for _, deltaEntry := range page.Entries {
 						if deltaEntry.Entry == nil {
 							//Handle deleted file later
@@ -39,14 +40,9 @@ func (producer *DropboxDeltaProducerBuilder) Build() stream.Producer {
 					}
 				}
 
-
 				producer.CurrentCursor = page.Cursor.Cursor
 
-				println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
-				println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
-				println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
-				println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
-				println("Next iteration............")
+				println("--------Next iteration............")
 
 				if page.HasMore == false {
 					println("------ No more entries!!-----")

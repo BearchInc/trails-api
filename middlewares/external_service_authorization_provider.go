@@ -5,11 +5,13 @@ import (
 	"github.com/go-martini/martini"
 )
 
-func ExternalServiceAuthorizationProvider(ds *appx.Datastore, martiniContext martini.Context) {
-	authorization := &models.Authorization{}
+func ExternalServiceAuthorizationProvider(ds *appx.Datastore, martiniContext martini.Context, account *models.Account) {
+	authorization := &models.ExternalServiceAuthorization{}
+	authorization.SetParentKey(account.Key())
+
 	if err := ds.Load(authorization); err != nil {
 		panic(err)
 	}
 
-	martiniContext.Map(&authorization)
+	martiniContext.Map(authorization)
 }

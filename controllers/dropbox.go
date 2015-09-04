@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"github.com/bearchinc/trails-api/services"
 	"github.com/drborges/rivers/stream"
+	"fmt"
 )
 
 type RegisterDropboxForm struct {
@@ -18,7 +19,7 @@ type RegisterDropboxForm struct {
 func RegisterDropbox(render render.Render, registerDropboxForm RegisterDropboxForm, account *models.Account, logger *middlewares.Logger, appx *appx.Datastore) {
 	logger.Infof("You are in register dropbox")
 
-	authorization := &models.Authorization{
+	authorization := &models.ExternalServiceAuthorization{
 		AuthorizationType: models.DropBox,
 		AccessToken: registerDropboxForm.AccessToken,
 		UserId: models.DropBox.String() + "-" + registerDropboxForm.UserId,
@@ -36,11 +37,11 @@ func RegisterDropbox(render render.Render, registerDropboxForm RegisterDropboxFo
 	render.Status(http.StatusOK)
 }
 
-func DropboxInit(req *http.Request, ds *appx.Datastore, account *models.Account, authorization *models.Authorization) {
+func DropboxInit(req *http.Request, ds *appx.Datastore, account *models.Account, authorization *models.ExternalServiceAuthorization) {
 	services.DropboxDelta(req, ds, authorization, newItem(ds))
 }
 
-func DropboxDelta(req *http.Request, ds *appx.Datastore, account *models.Account, authorization *models.Authorization) {
+func DropboxDelta(req *http.Request, ds *appx.Datastore, account *models.Account, authorization *models.ExternalServiceAuthorization) {
 	services.DropboxDelta(req, ds, authorization, alreadyCategorized(ds))
 }
 
@@ -56,6 +57,7 @@ func alreadyCategorized(ds *appx.Datastore) stream.PredicateFn {
 
 		err := ds.Load(trail)
 
+		println(fmt.Sprint("Will I skip this value? : ", err == nil))
 		return err == nil
 	}
 }

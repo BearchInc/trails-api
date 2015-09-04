@@ -12,33 +12,55 @@ import (
 	"github.com/drborges/appx"
 )
 
-func DropboxDelta(req *http.Request, ds *appx.Datastore, authorization *models.Authorization, existingItem stream.PredicateFn) {
+func DropboxDelta(req *http.Request, ds *appx.Datastore, authorization *models.ExternalServiceAuthorization, existingItem stream.PredicateFn) {
 	rivers.DebugEnabled = true
 
 	steamContext := rivers.NewContext()
 	dropboxClient := dropboxClient(newappengine.NewContext(req), authorization.AccessToken)
 	builder := DropboxDeltaProducerBuilder{Context: steamContext, Client: dropboxClient, CurrentCursor: authorization.LastCursor}
 
-	err := rivers.NewWith(builder.Context).
+	deltaStream, debugStream := rivers.NewWith(builder.Context).
 				From(builder.Build()).
-				Drop(notMedia).
+				Drop(nonMediaFiles).
 				Map(toTrail).
 				Drop(existingItem).
-				BatchBy(&appx.DatastoreBatch{Size: 500}).
+				Split()
+
+
+	err := deltaStream.BatchBy(&appx.DatastoreBatch{Size: 500}).
 				Each(saveBatch(ds)).
 				Drain()
+
+	total, _ := debugStream.Reduce(0, func(sum, item stream.T) stream.T{
+		return sum.(int) + 1
+	}).CollectFirst()
+
+	println(fmt.Sprintf("Total entries: %v", total.(int)))
 
 	authorization.LastCursor = builder.CurrentCursor
 	ds.Save(authorization)
 
-	println(fmt.Sprintf("########## %v", err))
+	if err != nil {
+		println(fmt.Sprintf("########## %v", err))
+	}
 }
 
-func notMedia(data stream.T) bool {
+func nonMediaFiles(data stream.T) bool {
 	item := data.(*dropbox.Entry)
-	if strings.HasPrefix(item.MimeType, "image") { return false }
-	if strings.HasPrefix(item.MimeType, "video") { return false }
 
+	println(fmt.Sprintf("Mime: %v AND Name: %v", item.MimeType, item.Path))
+
+	if strings.HasPrefix(item.MimeType, "image") {
+		println("")
+		return false
+	}
+	if strings.HasPrefix(item.MimeType, "video") {
+		println("")
+		return false
+	}
+
+	println("Skipped the file")
+	println("")
 	return true
 }
 

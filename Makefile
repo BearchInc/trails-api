@@ -24,6 +24,9 @@ delete-branches:
 serve:
 	goapp serve --host 0.0.0.0 app/app-staging.yaml
 
+serve_fresh:
+	goapp serve -clear_datastore --host 0.0.0.0 app/app-staging.yaml
+
 # Deployment tasks
 deploy:
 	goapp deploy -oauth app

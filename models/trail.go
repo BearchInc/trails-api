@@ -14,7 +14,7 @@ type Trail struct {
 
 	MimeType    string    `json:"mime_type"`
 	CreatedAt   time.Time `json:"created_at"`
-	Location    []string    `json:"location"`
+	Location    []float64 `json:"location"`
 	Bytes       int64        `json:"bytes"`
 
 	Type        TrailType
