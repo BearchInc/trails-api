@@ -18,25 +18,18 @@ func (producer *DropboxDeltaProducerBuilder) Build() stream.Producer {
 	return &producers.Observable{
 		Context: producer.Context,
 		Capacity: 1000,
-		Emit: func(w stream.Writable) {
+		Emit: func(emitter stream.Emitter) {
 			for {
 				println(fmt.Sprint("Using Cursor value: %v", producer.CurrentCursor))
 				page, err := producer.Client.Delta(producer.CurrentCursor, "")
 				if err != nil {
 					panic(err)
 				}
-
-				select {
-				case <- producer.Context.Closed():
-					return
-				default:
-
-					for _, deltaEntry := range page.Entries {
-						if deltaEntry.Entry == nil {
-							//Handle deleted file later
-						} else {
-							w <- deltaEntry.Entry
-						}
+				for _, deltaEntry := range page.Entries {
+					if deltaEntry.Entry == nil {
+						//Handle deleted file later
+					} else {
+						emitter.Emit(deltaEntry.Entry)
 					}
 				}
 

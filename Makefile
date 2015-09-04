@@ -57,10 +57,10 @@ delete-branches:
 	git branch | grep -v master | xargs -I {} git branch -D {}
 
 serve:
-	goapp serve --host 0.0.0.0 app/app-staging.yaml
+	goapp serve --host 0.0.0.0 app/app.yaml
 
 serve_fresh:
-	goapp serve -clear_datastore --host 0.0.0.0 app/app-staging.yaml
+	goapp serve -clear_datastore --host 0.0.0.0 app/app.yaml
 
 put-app-in-go-path:
 	mkdir -p $(GOPATH)/src/github.com/bearchinc
