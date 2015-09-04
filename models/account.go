@@ -2,8 +2,8 @@ package models
 
 import (
 	"appengine/datastore"
-	"github.com/bearchinc/hobo-api/api/utils"
 	"github.com/drborges/appx"
+	"github.com/bearchinc/trails-api/utils"
 )
 
 type Account struct {
