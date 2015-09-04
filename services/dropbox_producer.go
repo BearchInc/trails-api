@@ -9,14 +9,12 @@ import (
 
 
 type DropboxDeltaProducerBuilder struct {
-	Context       stream.Context
 	CurrentCursor string
 	Client        *dropbox.Dropbox
 }
 
 func (producer *DropboxDeltaProducerBuilder) Build() stream.Producer {
 	return &producers.Observable{
-		Context: producer.Context,
 		Capacity: 1000,
 		Emit: func(emitter stream.Emitter) {
 			for {

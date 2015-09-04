@@ -15,11 +15,10 @@ import (
 func DropboxDelta(req *http.Request, ds *appx.Datastore, authorization *models.ExternalServiceAuthorization, existingItem stream.PredicateFn) {
 	rivers.DebugEnabled = true
 
-	steamContext := rivers.NewContext()
 	dropboxClient := dropboxClient(newappengine.NewContext(req), authorization.AccessToken)
-	builder := DropboxDeltaProducerBuilder{Context: steamContext, Client: dropboxClient, CurrentCursor: authorization.LastCursor}
+	builder := DropboxDeltaProducerBuilder{Client: dropboxClient, CurrentCursor: authorization.LastCursor}
 
-	deltaStream, debugStream := rivers.NewWith(builder.Context).
+	deltaStream, debugStream := rivers.
 				From(builder.Build()).
 				Drop(nonMediaFiles).
 				Map(toTrail).
