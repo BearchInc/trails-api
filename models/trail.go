@@ -38,7 +38,6 @@ const (
 func (trail *Trail) KeySpec() *appx.KeySpec {
 	return &appx.KeySpec{
 		Kind:       "Trails",
-		Incomplete: true,
 		StringID: trail.Revision,
 	}
 }

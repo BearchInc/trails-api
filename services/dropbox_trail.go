@@ -30,18 +30,22 @@ func DropboxDelta(req *http.Request, ds *appx.Datastore, authorization *models.E
 				Each(saveBatch(ds)).
 				Drain()
 
-	total, _ := debugStream.Reduce(0, func(sum, item stream.T) stream.T{
+	total, errTotal := debugStream.Reduce(0, func(sum, item stream.T) stream.T{
 		return sum.(int) + 1
 	}).CollectFirst()
 
+	if errTotal != nil {
+		println(fmt.Sprintf("########## Guaging error %v", err))
+	}
 	println(fmt.Sprintf("Total entries: %v", total.(int)))
 
 	authorization.LastCursor = builder.CurrentCursor
 	ds.Save(authorization)
 
 	if err != nil {
-		println(fmt.Sprintf("########## %v", err))
+		println(fmt.Sprintf("########## Delta error %v", err))
 	}
+
 }
 
 func nonMediaFiles(data stream.T) bool {
