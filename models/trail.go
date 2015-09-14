@@ -32,6 +32,7 @@ const (
 type TrailType int
 const (
 	PhotoTrail    TrailType = iota
+	AudioTrail
 	VideoTrail
 )
 
