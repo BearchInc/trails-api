@@ -32,6 +32,9 @@ func Routes() http.Handler {
 			r.Post("/delta", controllers.DropboxDelta)
 		}, middlewares.ExternalServiceAuthorizationProvider)
 
+		r.Group("/trails", func(r martini.Router) {
+			r.Get("/next_evaluation", controllers.TrailNextEvaluation)
+		})
 	}, middlewares.AuthorizationAccountProvider)
 
 

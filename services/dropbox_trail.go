@@ -21,7 +21,7 @@ func DropboxDelta(req *http.Request, ds *appx.Datastore, authorization *models.E
 	deltaStream, debugStream := rivers.
 				From(builder.Build()).
 				Drop(nonMediaFiles).
-				Map(toTrail).
+				Map(toTrailForAuthorization(authorization)).
 				Drop(existingItem).
 				Split()
 
@@ -67,6 +67,15 @@ func nonMediaFiles(data stream.T) bool {
 	return true
 }
 
+func toTrailForAuthorization(authorization *models.ExternalServiceAuthorization) stream.MapFn {
+	return func(data stream.T) stream.T {
+		trailItem := toTrail(data)
+		trail := trailItem.(*models.Trail)
+		trail.SetParentKey(authorization.ParentKey())
+
+		return trail
+	}
+}
 
 func toTrail(data stream.T) stream.T {
 	item := data.(*dropbox.Entry)
