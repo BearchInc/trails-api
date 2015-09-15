@@ -10,18 +10,18 @@ import (
 type Trail struct {
 	appx.Model
 
-	Revision    string
-	Path        string `json:"path"`
-	ThumbExists bool   `json:"thumb_exists"`
+	Revision    string	`json:"-"`
+	Path        string	`json:"path"`
+	ThumbExists bool	`json:"thumb_exists"`
 
 	MimeType    string    `json:"mime_type"`
 	CreatedAt   time.Time `json:"created_at"`
 	Location    []float64 `json:"location"`
 	Bytes       int64        `json:"bytes"`
 
-	Type        TrailType
+	Type        TrailType	`json:"trail_type"`
 
-	Likeness    LikenessType
+	Likeness    LikenessType	`json:"likeness"`
 }
 
 type LikenessType int

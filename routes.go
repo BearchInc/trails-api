@@ -34,6 +34,7 @@ func Routes() http.Handler {
 
 		r.Group("/trails", func(r martini.Router) {
 			r.Get("/next_evaluation", controllers.TrailNextEvaluation)
+			r.Post("/:id/like", controllers.TrailLike)
 		})
 	}, middlewares.AuthorizationAccountProvider)
 
