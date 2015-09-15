@@ -13,19 +13,14 @@ type TrailResource struct {
 	DislikePath string `json:"dislike_path"`
 }
 
-type PagedResources struct {
-	Resources []stream.T	`json:"resources"`
-	NextPage string    `json:"next_page"`
-}
-
-func FromTrails(trails []*models.Trail, cursor string) PagedResources {
-	var resources PagedResources
+func FromTrails(trails []*models.Trail) []stream.T {
 	rivers.DebugEnabled = true
-	rivers.FromSlice(trails).
-		Map(toTrailResource).
-		Batch(len(trails)).
-		Map(toTrailsResources(cursor)).
-		CollectFirstAs(&resources)
+	resources, err := rivers.FromSlice(trails).
+						Map(toTrailResource).
+						Collect()
+	if err != nil {
+		panic(err)
+	}
 	return resources
 }
 
@@ -38,15 +33,4 @@ func toTrailResource(item stream.T) stream.T {
 		LikePath: selfPath + "/like",
 		DislikePath: selfPath + "/dislike",
 	}
-}
-
-func toTrailsResources(cursor string) stream.MapFn {
-	return func(item stream.T) stream.T {
-		trailsResources := item.([]stream.T)
-		return PagedResources{
-			Resources: trailsResources,
-			NextPage: cursor,
-		}
-	}
-
 }

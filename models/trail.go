@@ -11,7 +11,7 @@ type Trail struct {
 	appx.Model
 
 	Revision    string	`json:"-"`
-	Path        string	`json:"path"`
+	Path        string	`json:"media_path"`
 	ThumbExists bool	`json:"thumb_exists"`
 
 	MimeType    string    `json:"mime_type"`

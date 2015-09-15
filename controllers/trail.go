@@ -9,13 +9,12 @@ import (
 
 func TrailNextEvaluation(render render.Render, account *models.Account, db *appx.Datastore) {
 	var trails = make([]*models.Trail, 0)
-	iter := db.Query(models.Trails.ByNextEvaluation(account)).PagesIterator()
-	if err := iter.LoadNext(&trails); err != nil {
+	if err := db.Query(models.Trails.ByNextEvaluation(account)).Results(&trails); err != nil {
 		println("The error: ", err.Error())
 		render.JSON(http.StatusInternalServerError, err)
 	}
 
-	render.JSON(http.StatusOK, rest.FromTrails(trails, iter.Cursor()))
+	render.JSON(http.StatusOK, rest.FromTrails(trails))
 }
 
 func TrailLike() {
