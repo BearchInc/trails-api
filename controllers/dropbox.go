@@ -16,7 +16,7 @@ type RegisterDropboxForm struct {
 	UserId			string		`json:"user_id" binding:"required"`
 }
 
-func RegisterDropbox(render render.Render, registerDropboxForm RegisterDropboxForm, account *models.Account, logger *middlewares.Logger, appx *appx.Datastore) {
+func RegisterDropbox(req *http.Request, render render.Render, registerDropboxForm RegisterDropboxForm, account *models.Account, logger *middlewares.Logger, ds *appx.Datastore) {
 	logger.Infof("You are in register dropbox")
 
 	authorization := &models.ExternalServiceAuthorization{
@@ -25,13 +25,24 @@ func RegisterDropbox(render render.Render, registerDropboxForm RegisterDropboxFo
 		UserId: models.DropBox.String() + "-" + registerDropboxForm.UserId,
 	}
 
-
 	authorization.SetParentKey(account.Key())
 
-	if err := appx.Save(authorization); err != nil {
+	err := ds.Load(authorization)
+	if err != nil {
+		println("I failed you becasue: %v", err.Error())
+	}
+	exists := err == nil
+
+	if err := ds.Save(authorization); err != nil {
 		logger.Errorf("Unable to register for dropbox %v", err)
 		render.JSON(http.StatusInternalServerError, "Unable to register dropbox")
 		return
+	}
+
+	if exists {
+		DropboxDelta(req, ds, account, authorization)
+	} else {
+		DropboxInit(req, ds, account, authorization)
 	}
 
 	render.Status(http.StatusOK)

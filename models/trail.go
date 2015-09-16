@@ -86,7 +86,7 @@ var Trails = struct {
 			Filter("CreatedAt >", randomDate()).
 			Filter("Likeness =", NotEvaluated).
 			Order("CreatedAt").
-			Limit(4)
+			Limit(6)
 	},
 
 	Like: func(trailId string, db *appx.Datastore) error {
