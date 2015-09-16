@@ -14,3 +14,9 @@ indexes:
   ancestor: yes
   properties:
   - name: CreatedAt
+
+- kind: Trails
+  ancestor: yes
+  properties:
+  - name: Likeness
+  - name: CreatedAt

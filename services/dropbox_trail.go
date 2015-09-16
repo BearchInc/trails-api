@@ -12,7 +12,7 @@ import (
 	"github.com/drborges/appx"
 )
 
-func DropboxDelta(req *http.Request, ds *appx.Datastore, authorization *models.ExternalServiceAuthorization, existingItem stream.PredicateFn) {
+func DropboxDelta(req *http.Request,ds *appx.Datastore, authorization *models.ExternalServiceAuthorization, existingItem stream.PredicateFn) {
 	rivers.DebugEnabled = true
 
 	dropboxClient := dropboxClient(newappengine.NewContext(req), authorization.AccessToken)
@@ -25,10 +25,12 @@ func DropboxDelta(req *http.Request, ds *appx.Datastore, authorization *models.E
 				Drop(existingItem).
 				Split()
 
+	println("About to split data")
 
 	err := deltaStream.BatchBy(&appx.DatastoreBatch{Size: 500}).
 				Each(saveBatch(ds)).
 				Drain()
+	println(fmt.Sprintf("Error while batch saving the data: %v", err))
 
 	total, errTotal := debugStream.Reduce(0, func(sum, item stream.T) stream.T{
 		return sum.(int) + 1
@@ -63,7 +65,6 @@ func nonMediaFiles(data stream.T) bool {
 	}
 
 	println("Skipped the file")
-	println("")
 	return true
 }
 

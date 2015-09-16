@@ -26,7 +26,7 @@ func FromTrails(trails []*models.Trail) []stream.T {
 
 func toTrailResource(item stream.T) stream.T {
 	trail := item.(*models.Trail)
-	selfPath := fmt.Sprint("/accounts/trails/%v", trail.EncodedKey())
+	selfPath := fmt.Sprint("/account/trails/", trail.EncodedKey())
 
 	return TrailResource{
 		Trail: trail,
