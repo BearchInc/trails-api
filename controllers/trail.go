@@ -12,8 +12,17 @@ import (
 func TrailNextEvaluation(render render.Render, account *models.Account, db *appx.Datastore) {
 	var trails = make([]*models.Trail, 0)
 	if err := db.Query(models.Trails.ByNextEvaluation(account)).Results(&trails); err != nil {
-		println("The error: ", err.Error())
-		time.Sleep(time.Second)
+		println("Next evaluation error: ", err.Error())
+
+		count, err := db.Query(models.Trails.ByAccount(account)).Count()
+		if count == 0 {
+			println("Sleeping - I'm so lazy!!")
+			time.Sleep(time.Second)
+		}
+		if err != nil {
+			println("Next evaluation ---> Count error: ", err.Error())
+		}
+
 		TrailNextEvaluation(render, account, db)
 		return
 	}

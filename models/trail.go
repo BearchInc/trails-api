@@ -74,10 +74,10 @@ func likeness(trailId string, likeness LikenessType, db *appx.Datastore) error {
 }
 
 var Trails = struct {
-	ByNextEvaluation func(account *Account) *datastore.Query
-
-	Like func(trailId string, db *appx.Datastore) error
-	Dislike func(trailId string, db *appx.Datastore) error
+	ByNextEvaluation 	func(account *Account) *datastore.Query
+	ByAccount		 	func(account * Account) *datastore.Query
+	Like 				func(trailId string, db *appx.Datastore) error
+	Dislike 			func(trailId string, db *appx.Datastore) error
 
 } {
 	ByNextEvaluation: func(account *Account) *datastore.Query {
@@ -87,6 +87,11 @@ var Trails = struct {
 			Filter("Likeness =", NotEvaluated).
 			Order("CreatedAt").
 			Limit(6)
+	},
+
+	ByAccount: func(account *Account) *datastore.Query {
+		return datastore.NewQuery(new(Trail).KeySpec().Kind).
+		Ancestor(account.Key())
 	},
 
 	Like: func(trailId string, db *appx.Datastore) error {
