@@ -47,7 +47,7 @@ func (trail *Trail) KeySpec() *appx.KeySpec {
 
 func randomDate() time.Time {
 	rand.Seed(time.Now().Unix())
-	randomMonth := rand.Intn(18)
+	randomMonth := rand.Intn(60)
 	rand.Seed(time.Now().Unix() + int64(randomMonth))
 	randomDay := rand.Intn(30)
 
