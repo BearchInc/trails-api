@@ -10,7 +10,8 @@ import (
 	"github.com/bearchinc/trails-api/middlewares"
 )
 
-func TrailNextEvaluation(render render.Render, account *models.Account, log middlewares.Logger, db *appx.Datastore) {
+func TrailNextEvaluation(render render.Render, account *models.Account, log *middlewares.Logger, db *appx.Datastore) {
+	log.Infof("Folks, I will start evaluating for account: %+v", account.FirstName)
 	var trails = make([]*models.Trail, 0)
 	if err := db.Query(models.Trails.ByNextEvaluation(account)).Results(&trails); err != nil {
 		log.Errorf("Next evaluation error: ", err.Error())
