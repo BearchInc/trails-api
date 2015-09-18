@@ -10,8 +10,16 @@ import (
 	"github.com/bearchinc/trails-api/middlewares"
 )
 
+type RecursiveCount int
+
 func TrailNextEvaluation(render render.Render, account *models.Account, log *middlewares.Logger, db *appx.Datastore) {
 	log.Infof("Folks, I will start evaluating for account: %+v", account.FirstName)
+	trails := trailNextEvaluation(render, account, log, db, 0)
+
+	render.JSON(http.StatusOK, rest.FromTrails(trails))
+}
+
+func trailNextEvaluation(render render.Render, account *models.Account, log *middlewares.Logger, db *appx.Datastore, recursiveCount RecursiveCount) []*models.Trail {
 	var trails = make([]*models.Trail, 0)
 	if err := db.Query(models.Trails.ByNextEvaluation(account)).Results(&trails); err != nil {
 		log.Errorf("Next evaluation error: ", err.Error())
@@ -24,11 +32,17 @@ func TrailNextEvaluation(render render.Render, account *models.Account, log *mid
 		if err != nil {
 			log.Errorf("Next evaluation ---> Count error: ", err.Error())
 		}
+		recursiveCount++
 
-		TrailNextEvaluation(render, account, log, db)
+		if recursiveCount <= 10 {
+			trails = trailNextEvaluation(render, account, log, db, recursiveCount)
+			return trails
+		}
+
+		return trails
 	}
 
-	render.JSON(http.StatusOK, rest.FromTrails(trails))
+	return trails
 }
 
 func TrailLike(render render.Render, account *models.Account, db *appx.Datastore, params martini.Params) {

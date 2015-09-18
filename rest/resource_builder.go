@@ -15,6 +15,11 @@ type TrailResource struct {
 
 func FromTrails(trails []*models.Trail) []stream.T {
 	rivers.DebugEnabled = true
+
+	if len(trails) == 0 {
+		return []stream.T{}
+	}
+
 	resources, err := rivers.FromSlice(trails).
 						Map(toTrailResource).
 						Collect()
