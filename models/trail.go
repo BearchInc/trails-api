@@ -51,7 +51,7 @@ func randomDate() time.Time {
 	rand.Seed(time.Now().Unix() + int64(randomMonth))
 	randomDay := rand.Intn(30)
 
-	return time.Now().AddDate(0, 0, -randomDay)
+	return time.Now().AddDate(0, -randomMonth, -randomDay)
 }
 
 func likeness(trailId string, likeness LikenessType, db *appx.Datastore) error {
