@@ -7,24 +7,24 @@ import (
 	"github.com/bearchinc/trails-api/rest"
 	"github.com/go-martini/martini"
 	"time"
+	"github.com/bearchinc/trails-api/middlewares"
 )
 
-func TrailNextEvaluation(render render.Render, account *models.Account, db *appx.Datastore) {
+func TrailNextEvaluation(render render.Render, account *models.Account, log middlewares.Logger, db *appx.Datastore) {
 	var trails = make([]*models.Trail, 0)
 	if err := db.Query(models.Trails.ByNextEvaluation(account)).Results(&trails); err != nil {
-		println("Next evaluation error: ", err.Error())
+		log.Errorf("Next evaluation error: ", err.Error())
 
 		count, err := db.Query(models.Trails.ByAccount(account)).Count()
 		if count == 0 {
-			println("Sleeping - I'm so lazy!!")
+			log.Infof("Sleeping - I'm so lazy!!")
 			time.Sleep(time.Second)
 		}
 		if err != nil {
-			println("Next evaluation ---> Count error: ", err.Error())
+			log.Errorf("Next evaluation ---> Count error: ", err.Error())
 		}
 
-		TrailNextEvaluation(render, account, db)
-		return
+		TrailNextEvaluation(render, account, log, db)
 	}
 
 	render.JSON(http.StatusOK, rest.FromTrails(trails))
