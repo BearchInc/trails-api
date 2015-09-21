@@ -10,6 +10,7 @@ import (
 	"github.com/bearchinc/trails-api/models"
 	"time"
 	"github.com/drborges/appx"
+	"appengine"
 )
 
 func DropboxDelta(req *http.Request,ds *appx.Datastore, authorization *models.ExternalServiceAuthorization, existingItem stream.PredicateFn) {
@@ -89,12 +90,22 @@ func toTrail(data stream.T) stream.T {
 		Bytes: item.Bytes,
 		Likeness: models.NotEvaluated,
 		Revision: item.Revision,
+		GeoPoint: geoPointFrom(item),
 	}
 
-	if item.PhotoInfo != nil { trail.Location = item.PhotoInfo.LatLong }
-	if item.VideoInfo != nil { trail.Location = item.VideoInfo.LatLong }
-
 	return trail
+}
+
+func geoPointFrom(item *dropbox.Entry) *appengine.GeoPoint {
+	if item.PhotoInfo != nil {
+		return &appengine.GeoPoint{Lat: item.PhotoInfo.LatLong[0], Lng: item.PhotoInfo.LatLong[1]}
+	}
+
+	if item.VideoInfo != nil {
+		return &appengine.GeoPoint{Lat: item.VideoInfo.LatLong[0], Lng: item.VideoInfo.LatLong[1]}
+	}
+
+	return nil
 }
 
 func saveBatch(ds *appx.Datastore) stream.EachFn {

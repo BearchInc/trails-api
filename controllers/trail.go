@@ -67,3 +67,11 @@ func TrailDislike(render render.Render, account *models.Account, db *appx.Datast
 	render.Status(http.StatusNoContent)
 
 }
+
+func Stories(render render.Render) {
+	println("fetching stories")
+
+	stories := []models.Story{}
+
+	render.JSON(http.StatusOK, stories)
+}

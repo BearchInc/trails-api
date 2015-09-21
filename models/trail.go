@@ -4,24 +4,26 @@ import (
 	"github.com/drborges/appx"
 	"time"
 	"appengine/datastore"
-"math/rand"
+	"math/rand"
+	"appengine"
 )
 
 type Trail struct {
 	appx.Model
 
-	Revision    string	`json:"-"`
-	Path        string	`json:"media_path"`
-	ThumbExists bool	`json:"thumb_exists"`
+	Revision     string               `json:"-"`
+	Path         string               `json:"media_path"`
+	ThumbExists  bool                 `json:"thumb_exists"`
 
-	MimeType    string    `json:"mime_type"`
-	CreatedAt   time.Time `json:"created_at"`
-	Location    []float64 `json:"location"`
-	Bytes       int64        `json:"bytes"`
+	MimeType     string               `json:"mime_type"`
+	CreatedAt    time.Time            `json:"created_at"`
+	GeoPoint     *appengine.GeoPoint  `json:"geo_point"`
+	Bytes        int64                `json:"bytes"`
 
-	Type        TrailType	`json:"trail_type"`
+	Type         TrailType            `json:"trail_type"`
 
-	Likeness    LikenessType	`json:"likeness"`
+	Likeness     LikenessType         `json:"likeness"`
+	EvaluatedOn  time.Time            `json:"evaluated_on"`
 }
 
 type LikenessType int
@@ -64,6 +66,7 @@ func likeness(trailId string, likeness LikenessType, db *appx.Datastore) error {
 	}
 
 	trail.Likeness = likeness
+	trail.EvaluatedOn = time.Now()
 
 	if err := db.Save(&trail); err != nil {
 		println("The error: ", err.Error())
@@ -74,19 +77,19 @@ func likeness(trailId string, likeness LikenessType, db *appx.Datastore) error {
 }
 
 var Trails = struct {
-	ByNextEvaluation 	func(account *Account) *datastore.Query
-	ByAccount		 	func(account * Account) *datastore.Query
-	Like 				func(trailId string, db *appx.Datastore) error
-	Dislike 			func(trailId string, db *appx.Datastore) error
+	ByNextEvaluation func(account *Account) *datastore.Query
+	ByAccount        func(account *Account) *datastore.Query
+	Like             func(trailId string, db *appx.Datastore) error
+	Dislike          func(trailId string, db *appx.Datastore) error
 
-} {
+}{
 	ByNextEvaluation: func(account *Account) *datastore.Query {
 		return datastore.NewQuery(new(Trail).KeySpec().Kind).
-			Ancestor(account.Key()).
-			Filter("CreatedAt >", randomDate()).
-			Filter("Likeness =", NotEvaluated).
-			Order("CreatedAt").
-			Limit(6)
+		Ancestor(account.Key()).
+		Filter("CreatedAt >", randomDate()).
+		Filter("Likeness =", NotEvaluated).
+		Order("CreatedAt").
+		Limit(6)
 	},
 
 	ByAccount: func(account *Account) *datastore.Query {
