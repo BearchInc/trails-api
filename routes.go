@@ -40,7 +40,5 @@ func Routes() http.Handler {
 		})
 	}, middlewares.AuthorizationAccountProvider)
 
-
-
 	return router
 }

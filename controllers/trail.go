@@ -71,7 +71,38 @@ func TrailDislike(render render.Render, account *models.Account, db *appx.Datast
 func Stories(render render.Render) {
 	println("fetching stories")
 
-	stories := []models.Story{}
+	stories := []models.Story{
+		models.Story{
+			ImagePath: "/Camera Uploads/2013-02-24 15.47.44.mov",
+			Title: "Heck is love",
+			Trails: []models.Trail{},
+		},
+		models.Story{
+			ImagePath: "/Camera Uploads/2013-02-24 15.55.31.jpg",
+			Title: "Heck dont hurt me",
+			Trails: []models.Trail{},
+		},
+		models.Story{
+			ImagePath: "/Camera Uploads/2013-02-24 18.32.33.jpg",
+			Title: "Dont hurt me",
+			Trails: []models.Trail{},
+		},
+		models.Story{
+			ImagePath: "/Camera Uploads/2013-03-01 12.38.58.jpg",
+			Title: "No more",
+			Trails: []models.Trail{},
+		},
+		models.Story{
+			ImagePath: "/Camera Uploads/2013-03-01 18.29.19.jpg",
+			Title: "Lizard is cool",
+			Trails: []models.Trail{},
+		},
+		models.Story{
+			ImagePath: "/Camera Uploads/2013-03-02 11.05.37.jpg",
+			Title: "Lizard dont hurt me",
+			Trails: []models.Trail{},
+		},
+	}
 
 	render.JSON(http.StatusOK, stories)
 }
