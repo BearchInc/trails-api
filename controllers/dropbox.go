@@ -8,12 +8,12 @@ import (
 	"net/http"
 	"github.com/bearchinc/trails-api/services"
 	"github.com/drborges/rivers/stream"
-	"fmt"
+	"appengine/datastore"
 )
 
 type RegisterDropboxForm struct {
-	AccessToken		string		`json:"access_token" binding:"required"`
-	UserId			string		`json:"user_id" binding:"required"`
+	AccessToken string        `json:"access_token" binding:"required"`
+	UserId      string        `json:"user_id" binding:"required"`
 }
 
 func RegisterDropbox(req *http.Request, render render.Render, registerDropboxForm RegisterDropboxForm, account *models.Account, logger *middlewares.Logger, ds *appx.Datastore) {
@@ -67,8 +67,10 @@ func alreadyCategorized(ds *appx.Datastore) stream.PredicateFn {
 		trail := data.(*models.Trail)
 
 		err := ds.Load(trail)
+		if (err == datastore.ErrNoSuchEntity) {
+			return false
+		}
 
-		println(fmt.Sprint("Will I skip this value? : ", err == nil))
 		return err == nil
 	}
 }

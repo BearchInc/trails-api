@@ -31,6 +31,7 @@ func DropboxDelta(req *http.Request,ds *appx.Datastore, authorization *models.Ex
 	err := deltaStream.BatchBy(&appx.DatastoreBatch{Size: 500}).
 				Each(saveBatch(ds)).
 				Drain()
+
 	println(fmt.Sprintf("Error while batch saving the data: %v", err))
 
 	total, errTotal := debugStream.Reduce(0, func(sum, item stream.T) stream.T{
@@ -39,6 +40,7 @@ func DropboxDelta(req *http.Request,ds *appx.Datastore, authorization *models.Ex
 
 	if errTotal != nil {
 		println(fmt.Sprintf("########## Guaging error %v", err))
+		return
 	}
 	println(fmt.Sprintf("Total entries: %v", total.(int)))
 
@@ -96,16 +98,18 @@ func toTrail(data stream.T) stream.T {
 	return trail
 }
 
-func geoPointFrom(item *dropbox.Entry) *appengine.GeoPoint {
-	if item.PhotoInfo != nil {
-		return &appengine.GeoPoint{Lat: item.PhotoInfo.LatLong[0], Lng: item.PhotoInfo.LatLong[1]}
+func geoPointFrom(item *dropbox.Entry) appengine.GeoPoint {
+	if item.PhotoInfo != nil && len(item.PhotoInfo.LatLong) > 0 {
+		println(fmt.Sprint("Photo info is: %+v", item.PhotoInfo))
+		return appengine.GeoPoint{Lat: item.PhotoInfo.LatLong[0], Lng: item.PhotoInfo.LatLong[1]}
 	}
 
-	if item.VideoInfo != nil {
-		return &appengine.GeoPoint{Lat: item.VideoInfo.LatLong[0], Lng: item.VideoInfo.LatLong[1]}
+	if item.VideoInfo != nil && len(item.VideoInfo.LatLong) > 0 {
+		println("Video info is: %+v", item.VideoInfo)
+		return appengine.GeoPoint{Lat: item.VideoInfo.LatLong[0], Lng: item.VideoInfo.LatLong[1]}
 	}
 
-	return nil
+	return appengine.GeoPoint{}
 }
 
 func saveBatch(ds *appx.Datastore) stream.EachFn {

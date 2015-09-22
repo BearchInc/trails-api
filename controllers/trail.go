@@ -8,6 +8,7 @@ import (
 	"github.com/go-martini/martini"
 	"time"
 	"github.com/bearchinc/trails-api/middlewares"
+	"appengine"
 )
 
 type RecursiveCount int
@@ -45,10 +46,10 @@ func trailNextEvaluation(render render.Render, account *models.Account, log *mid
 	return trails
 }
 
-func TrailLike(render render.Render, account *models.Account, db *appx.Datastore, params martini.Params) {
+func TrailLike(render render.Render, context appengine.Context, account *models.Account, db *appx.Datastore, params martini.Params) {
 	println("Good job liking it")
 
-	if err := models.Trails.Like(params["trail_id"], db); err != nil {
+	if err := models.Trails.Like(params["trail_id"], db, context); err != nil {
 		println("The error: ", err.Error())
 		render.JSON(http.StatusInternalServerError, err)
 	}
@@ -56,10 +57,10 @@ func TrailLike(render render.Render, account *models.Account, db *appx.Datastore
 	render.Status(http.StatusNoContent)
 }
 
-func TrailDislike(render render.Render, account *models.Account, db *appx.Datastore, params martini.Params) {
+func TrailDislike(render render.Render, context appengine.Context, account *models.Account, db *appx.Datastore, params martini.Params) {
 	println("You are evil")
 
-	if err := models.Trails.Dislike(params["trail_id"], db); err != nil {
+	if err := models.Trails.Dislike(params["trail_id"], db, context); err != nil {
 		println("The error: ", err.Error())
 		render.JSON(http.StatusInternalServerError, err)
 	}

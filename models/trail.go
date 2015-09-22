@@ -6,24 +6,28 @@ import (
 	"appengine/datastore"
 	"math/rand"
 	"appengine"
+	"github.com/drborges/geocoder/providers/google"
+	"appengine/urlfetch"
+	"fmt"
 )
 
 type Trail struct {
 	appx.Model
 
-	Revision     string               `json:"-"`
-	Path         string               `json:"media_path"`
-	ThumbExists  bool                 `json:"thumb_exists"`
+	Revision    string               `json:"-"`
+	Path        string               `json:"media_path"`
+	ThumbExists bool                 `json:"thumb_exists"`
 
-	MimeType     string               `json:"mime_type"`
-	CreatedAt    time.Time            `json:"created_at"`
-	GeoPoint     *appengine.GeoPoint  `json:"geo_point"`
-	Bytes        int64                `json:"bytes"`
+	MimeType    string               `json:"mime_type"`
+	CreatedAt   time.Time            `json:"created_at"`
+	GeoPoint    appengine.GeoPoint  `json:"geo_point"`
+	Tags        []string              `json:"geo_point"`
+	Bytes       int64                `json:"bytes"`
 
-	Type         TrailType            `json:"trail_type"`
+	Type        TrailType            `json:"trail_type"`
 
-	Likeness     LikenessType         `json:"likeness"`
-	EvaluatedOn  time.Time            `json:"evaluated_on"`
+	Likeness    LikenessType         `json:"likeness"`
+	EvaluatedOn time.Time            `json:"evaluated_on"`
 }
 
 type LikenessType int
@@ -56,7 +60,7 @@ func randomDate() time.Time {
 	return time.Now().AddDate(0, -randomMonth, -randomDay)
 }
 
-func likeness(trailId string, likeness LikenessType, db *appx.Datastore) error {
+func likeness(trailId string, likeness LikenessType, db *appx.Datastore, context appengine.Context) error {
 	trail := Trail{}
 	trail.SetEncodedKey(trailId)
 
@@ -68,6 +72,15 @@ func likeness(trailId string, likeness LikenessType, db *appx.Datastore) error {
 	trail.Likeness = likeness
 	trail.EvaluatedOn = time.Now()
 
+	if (trail.Likeness == LikedIt && trail.GeoPoint != appengine.GeoPoint{}) {
+
+		println(">>>>>>About to fetch from Google!")
+		trail.Tags = fetchLatLngFromGoogle(trail, context)
+	}
+
+	println(fmt.Sprintf("The trail details is: %+v", trail))
+	println("")
+
 	if err := db.Save(&trail); err != nil {
 		println("The error: ", err.Error())
 		return err
@@ -76,11 +89,27 @@ func likeness(trailId string, likeness LikenessType, db *appx.Datastore) error {
 	return nil
 }
 
+func fetchLatLngFromGoogle(trail Trail, context appengine.Context) []string {
+	geoCoder := &google.Geocoder{
+		HttpClient:             urlfetch.Client(context),
+		ReverseGeocodeEndpoint: google.ReverseGeocodeEndpoint + "&key=AIzaSyC1O6FZtjFDSJz5zCqVbVlVOr60gDYg_Zw",
+	}
+
+	res, err := geoCoder.ReverseGeocode(trail.GeoPoint.Lat, trail.GeoPoint.Lng)
+
+	if err != nil { return []string{"Uncategorized"} }
+
+	var address google.Address
+	google.ReadResponse(res, &address)
+
+	return []string{address.FullCity, address.FullState, address.FullCountry}
+}
+
 var Trails = struct {
 	ByNextEvaluation func(account *Account) *datastore.Query
 	ByAccount        func(account *Account) *datastore.Query
-	Like             func(trailId string, db *appx.Datastore) error
-	Dislike          func(trailId string, db *appx.Datastore) error
+	Like             func(trailId string, db *appx.Datastore, context appengine.Context) error
+	Dislike          func(trailId string, db *appx.Datastore, context appengine.Context) error
 
 }{
 	ByNextEvaluation: func(account *Account) *datastore.Query {
@@ -97,11 +126,11 @@ var Trails = struct {
 		Ancestor(account.Key())
 	},
 
-	Like: func(trailId string, db *appx.Datastore) error {
-		return likeness(trailId, LikedIt, db)
+	Like: func(trailId string, db *appx.Datastore, context appengine.Context) error {
+		return likeness(trailId, LikedIt, db, context)
 	},
 
-	Dislike: func(trailId string, db *appx.Datastore) error {
-		return likeness(trailId, DislikedIt, db)
+	Dislike: func(trailId string, db *appx.Datastore, context appengine.Context) error {
+		return likeness(trailId, DislikedIt, db, context)
 	},
 }

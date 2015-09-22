@@ -44,14 +44,17 @@ update: setup
 	$(GO) get google.golang.org/grpc
 	$(GO) get -u golang.org/x/oauth2/google
 	$(GO) get golang.org/x/net/context
-	$(GO) get github.com/drborges/appx
+	$(GO) get -u github.com/drborges/rivers
 	$(GO) get github.com/go-martini/martini
 	$(GO) get github.com/martini-contrib/render
 	$(GO) get github.com/martini-contrib/binding
 	$(GO) get google.golang.org/cloud/compute/metadata
 	$(GO) get github.com/dchest/authcookie
+	$(GO) get github.com/drborges/appx
+
 	rm -rf $(GOPATH)/src/github.com/stacktic/dropbox 2> /dev/null
 	@git clone https://github.com/BearchInc/dropbox.git $(GOPATH)/src/github.com/stacktic/dropbox
+	@git clone https://github.com/BearchInc/geocoder.git $(GOPATH)/src/github.com/drborges/geocoder
 
 delete-branches:
 	git branch | grep -v master | xargs -I {} git branch -D {}
