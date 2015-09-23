@@ -9,6 +9,8 @@ import (
 	"github.com/drborges/geocoder/providers/google"
 	"appengine/urlfetch"
 	"fmt"
+	"github.com/drborges/rivers"
+	"github.com/drborges/rivers/stream"
 )
 
 type Trail struct {
@@ -46,8 +48,9 @@ const (
 
 func (trail *Trail) KeySpec() *appx.KeySpec {
 	return &appx.KeySpec{
-		Kind:       "Trails",
-		StringID: trail.Revision,
+		Kind:        "Trails",
+		StringID:    trail.Revision,
+		HasParent:    true,
 	}
 }
 
@@ -73,9 +76,10 @@ func likeness(trailId string, likeness LikenessType, db *appx.Datastore, context
 	trail.EvaluatedOn = time.Now()
 
 	if (trail.Likeness == LikedIt && trail.GeoPoint != appengine.GeoPoint{}) {
-
 		println(">>>>>>About to fetch from Google!")
 		trail.Tags = fetchLatLngFromGoogle(trail, context)
+
+		trail.storeTags(context, db)
 	}
 
 	println(fmt.Sprintf("The trail details is: %+v", trail))
@@ -87,6 +91,45 @@ func likeness(trailId string, likeness LikenessType, db *appx.Datastore, context
 	}
 
 	return nil
+}
+
+func (trail *Trail) storeTags(context appengine.Context, db *appx.Datastore) {
+	println("Trying to store tags")
+	err := rivers.FromData(trail).FlatMap(func(data stream.T) stream.T {
+		trail := data.(*Trail)
+		return []*Tag{
+			trail.City(),
+			trail.State(),
+			trail.Country(),
+		}
+	}).Each(func(data stream.T) {
+		tag := data.(*Tag)
+		tag.SetParentKey(trail.ParentKey())
+		datastore.RunInTransaction(context, func(c appengine.Context) error {
+			if err := db.Load(tag); err == nil {
+				tag.LikenessCount++
+			} else {
+				tag.LikenessCount = 1
+			}
+
+			return db.Save(tag)
+		}, nil)
+	}).Drain()
+	if err != nil {
+		println(">>>>Screwed", err.Error())
+	}
+}
+
+func (trail Trail) City() *Tag {
+	return &Tag{Type: TagTypeCity, Value:trail.Tags[TagTypeCity]}
+}
+
+func (trail Trail) State() *Tag {
+	return &Tag{Type: TagTypeState, Value: trail.Tags[TagTypeState]}
+}
+
+func (trail Trail) Country() *Tag {
+	return &Tag{Type: TagTypeCountry, Value: trail.Tags[TagTypeCountry]}
 }
 
 func fetchLatLngFromGoogle(trail Trail, context appengine.Context) []string {
@@ -102,7 +145,7 @@ func fetchLatLngFromGoogle(trail Trail, context appengine.Context) []string {
 	var address google.Address
 	google.ReadResponse(res, &address)
 
-	return []string{address.FullCity, address.FullState, address.FullCountry}
+	return []string{address.FullCountry, address.FullState, address.FullCity}
 }
 
 var Trails = struct {

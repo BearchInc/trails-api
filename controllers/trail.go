@@ -47,19 +47,16 @@ func trailNextEvaluation(render render.Render, account *models.Account, log *mid
 }
 
 func TrailLike(render render.Render, context appengine.Context, account *models.Account, db *appx.Datastore, params martini.Params) {
-	println("Good job liking it")
-
 	if err := models.Trails.Like(params["trail_id"], db, context); err != nil {
 		println("The error: ", err.Error())
 		render.JSON(http.StatusInternalServerError, err)
 	}
 
+
 	render.Status(http.StatusNoContent)
 }
 
 func TrailDislike(render render.Render, context appengine.Context, account *models.Account, db *appx.Datastore, params martini.Params) {
-	println("You are evil")
-
 	if err := models.Trails.Dislike(params["trail_id"], db, context); err != nil {
 		println("The error: ", err.Error())
 		render.JSON(http.StatusInternalServerError, err)
@@ -69,41 +66,14 @@ func TrailDislike(render render.Render, context appengine.Context, account *mode
 
 }
 
-func Stories(render render.Render) {
+func Tags(render render.Render, account *models.Account, db *appx.Datastore) {
 	println("fetching stories")
+	var tags = make([]*models.Tag, 0)
 
-	stories := []models.Story{
-		models.Story{
-			ImagePath: "/Camera Uploads/2013-02-24 15.47.44.mov",
-			Title: "Heck is love",
-			Trails: []models.Trail{},
-		},
-		models.Story{
-			ImagePath: "/Camera Uploads/2013-02-24 15.55.31.jpg",
-			Title: "Heck dont hurt me",
-			Trails: []models.Trail{},
-		},
-		models.Story{
-			ImagePath: "/Camera Uploads/2013-02-24 18.32.33.jpg",
-			Title: "Dont hurt me",
-			Trails: []models.Trail{},
-		},
-		models.Story{
-			ImagePath: "/Camera Uploads/2013-03-01 12.38.58.jpg",
-			Title: "No more",
-			Trails: []models.Trail{},
-		},
-		models.Story{
-			ImagePath: "/Camera Uploads/2013-03-01 18.29.19.jpg",
-			Title: "Lizard is cool",
-			Trails: []models.Trail{},
-		},
-		models.Story{
-			ImagePath: "/Camera Uploads/2013-03-02 11.05.37.jpg",
-			Title: "Lizard dont hurt me",
-			Trails: []models.Trail{},
-		},
+	if err := db.Query(models.Tags.ByAccount(account)).Results(&tags); err != nil {
+		println("The error: ", err.Error())
+		render.JSON(http.StatusInternalServerError, err)
 	}
 
-	render.JSON(http.StatusOK, stories)
+	render.JSON(http.StatusOK, rest.FromTags(tags))
 }

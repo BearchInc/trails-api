@@ -10,6 +10,13 @@ indexes:
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
 
+- kind: Tags
+  ancestor: yes
+  properties:
+  - name: Type
+  - name: LikenessCount
+    direction: desc
+
 - kind: Trails
   ancestor: yes
   properties:
