@@ -90,15 +90,20 @@ func likeness(trailId string, likeness LikenessType, db *appx.Datastore, context
 }
 
 func (trail *Trail) storeTags(context appengine.Context, db *appx.Datastore) {
-	println("Trying to store tags")
-	err := rivers.FromData(trail).FlatMap(func(data stream.T) stream.T {
+	extractTags := func(data stream.T) stream.T {
 		trail := data.(*Trail)
 		return []*Tag{
 			trail.City(),
 			trail.State(),
 			trail.Country(),
 		}
-	}).Each(func(data stream.T) {
+	}
+
+	IfNil := func(data stream.T) bool {
+		return data == (*Tag)(nil)
+	}
+
+	err := rivers.FromData(trail).FlatMap(extractTags).Drop(IfNil).Each(func(data stream.T) {
 		tag := data.(*Tag)
 		tag.SetParentKey(trail.ParentKey())
 		tag.ImagePath = trail.Path
@@ -119,10 +124,12 @@ func (trail *Trail) storeTags(context appengine.Context, db *appx.Datastore) {
 }
 
 func (trail Trail) City() *Tag {
+	if len(trail.Tags) == 1 { return nil }
 	return &Tag{Type: TagTypeCity, Value:trail.Tags[TagTypeCity]}
 }
 
 func (trail Trail) State() *Tag {
+	if len(trail.Tags) == 1 { return nil }
 	return &Tag{Type: TagTypeState, Value: trail.Tags[TagTypeState]}
 }
 
@@ -136,7 +143,7 @@ func fetchLatLngFromGoogle(trail Trail, context appengine.Context) []string {
 		ReverseGeocodeEndpoint: google.ReverseGeocodeEndpoint + "&key=AIzaSyC1O6FZtjFDSJz5zCqVbVlVOr60gDYg_Zw",
 	}
 
-	if (trail.GeoPoint == appengine.GeoPoint {}) { return []string{Uncategorized} }
+	if (trail.GeoPoint == appengine.GeoPoint{}) { return []string{Uncategorized} }
 
 	println(">>>>>>About to fetch from Google!")
 	res, err := geoCoder.ReverseGeocode(trail.GeoPoint.Lat, trail.GeoPoint.Lng)
