@@ -23,18 +23,18 @@ type TagResource struct {
 }
 
 func FromTrails(trails []*models.Trail) []stream.T {
-	rivers.DebugEnabled = true
+	return from(trails, toTrailResource)
+}
 
-	if len(trails) == 0 {
-		return []stream.T{}
-	}
+func FromTags(tags []*models.Tag) []stream.T {
+	return from(tags, toTagResource)
+}
 
-	resources, err := rivers.FromSlice(trails).
-	Map(toTrailResource).
-	Collect()
-	if err != nil {
-		panic(err)
-	}
+func from(from stream.T, mapper func(item stream.T) stream.T) []stream.T {
+	resources, _ := rivers.FromSlice(from).
+		Map(mapper).
+		Collect()
+
 	return resources
 }
 
@@ -49,31 +49,15 @@ func toTrailResource(item stream.T) stream.T {
 	}
 }
 
-func FromTags(tags []*models.Tag) []stream.T {
-	rivers.DebugEnabled = true
-
-	if len(tags) == 0 {
-		return []stream.T{}
-	}
-
-	resources, err := rivers.FromSlice(tags).
-	Map(toTagResource).
-	Collect()
-
-	if err != nil {
-		panic(err)
-	}
-	return resources
-}
 
 func toTagResource(item stream.T) stream.T {
 	tag := item.(*models.Tag)
-	selfPath := fmt.Sprintf("/account/trails/%v", tag.Value)
+	selfPath := fmt.Sprintf("/account/trails/tags/%v", tag.Value)
 
 	return TagResource{
 		Title: tag.Value,
 		LikenessCount: tag.LikenessCount,
-		ImagePath: "http://allworldtowns.com/data_images/countries/hawaii/hawaii-09.html",
+		ImagePath: "http://allworldtowns.com/data_images/countries/hawaii/hawaii-09.jpg",
 		AuthorizationType: models.Url,
 		SelfPath: selfPath,
 	}

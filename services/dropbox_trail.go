@@ -14,8 +14,6 @@ import (
 )
 
 func DropboxDelta(req *http.Request,ds *appx.Datastore, authorization *models.ExternalServiceAuthorization, existingItem stream.PredicateFn) {
-	rivers.DebugEnabled = true
-
 	dropboxClient := dropboxClient(newappengine.NewContext(req), authorization.AccessToken)
 	builder := DropboxDeltaProducerBuilder{Client: dropboxClient, CurrentCursor: authorization.LastCursor}
 

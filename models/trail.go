@@ -173,7 +173,7 @@ var Trails = struct {
 	ByTag:func(tagId string, account *Account) *datastore.Query {
 		return datastore.NewQuery(new(Trail).KeySpec().Kind).
 				Ancestor(account.Key()).
-				Filter("Tags", tagId).
+				Filter("Tags=", tagId).
 				Order("-EvaluatedOn")
 	},
 

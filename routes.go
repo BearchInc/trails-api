@@ -37,7 +37,7 @@ func Routes() http.Handler {
 			r.Patch("/:trail_id/like", controllers.TrailLike)
 			r.Patch("/:trail_id/dislike", controllers.TrailDislike)
 			r.Get("/tags", controllers.Tags)
-			r.Get("/tags/:tagid", controllers.TagTrails)
+			r.Get("/tags/:tag_id", controllers.TagTrails)
 		})
 	}, middlewares.AuthorizationAccountProvider)
 

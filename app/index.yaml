@@ -22,3 +22,10 @@ indexes:
   properties:
   - name: Likeness
   - name: CreatedAt
+
+- kind: Trails
+  ancestor: yes
+  properties:
+  - name: Tags
+  - name: EvaluatedOn
+    direction: desc

@@ -50,8 +50,8 @@ func TrailLike(render render.Render, context appengine.Context, account *models.
 	if err := models.Trails.Like(params["trail_id"], db, context); err != nil {
 		println("The error: ", err.Error())
 		render.JSON(http.StatusInternalServerError, err)
+		return
 	}
-
 
 	render.Status(http.StatusNoContent)
 }
@@ -60,31 +60,30 @@ func TrailDislike(render render.Render, context appengine.Context, account *mode
 	if err := models.Trails.Dislike(params["trail_id"], db, context); err != nil {
 		println("The error: ", err.Error())
 		render.JSON(http.StatusInternalServerError, err)
+		return
 	}
 
 	render.Status(http.StatusNoContent)
 
 }
 
-func Tags(render render.Render, account *models.Account, db *appx.Datastore) {
-	println("fetching stories")
-	var tags = make([]*models.Tag, 0)
+func Tags(render render.Render, account *models.Account, db *appx.Datastore, log *middlewares.Logger) {
+	tags := make([]*models.Tag, 0)
 
-	if err := db.Query(models.Tags.ByAccount(account)).Results(&tags); err != nil {
-		println("The error: ", err.Error())
-		render.JSON(http.StatusInternalServerError, err)
+	if err := db.Query(models.Tags.ByAccount(account)).Results(&tags); err != nil  {
+		log.Errorf("The error: ", err.Error())
+		render.JSON(http.StatusOK, tags)
+		return
 	}
 
 	render.JSON(http.StatusOK, rest.FromTags(tags))
 }
 
 func TagTrails(render render.Render, account *models.Account, db *appx.Datastore, log *middlewares.Logger, params martini.Params) {
-	log.Infof("Accessing stories")
-
-	var trails = make([]*models.Trail, 0)
-	if err := db.Query(models.Trails.ByTag(params[""], account)).Results(&trails); err != nil {
-		log.Errorf("The error: ", err.Error())
-		render.JSON(http.StatusInternalServerError, err)
+	trails := make([]*models.Trail, 0)
+	if err := db.Query(models.Trails.ByTag(params["tag_id"], account)).Results(&trails); err != nil {
+		log.Errorf("The error for Tag: %v and Error:", params["tag_id"], err.Error())
+		render.JSON(http.StatusInternalServerError, trails)
 	}
 
 	render.JSON(http.StatusOK, trails)
