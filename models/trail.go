@@ -8,7 +8,6 @@ import (
 	"appengine"
 	"github.com/drborges/geocoder/providers/google"
 	"appengine/urlfetch"
-	"fmt"
 	"github.com/drborges/rivers"
 	"github.com/drborges/rivers/stream"
 )
@@ -38,6 +37,8 @@ const (
 	LikedIt
 	DislikedIt
 )
+
+const Uncategorized = "Uncategorized"
 
 type TrailType int
 const (
@@ -75,15 +76,10 @@ func likeness(trailId string, likeness LikenessType, db *appx.Datastore, context
 	trail.Likeness = likeness
 	trail.EvaluatedOn = time.Now()
 
-	if (trail.Likeness == LikedIt && trail.GeoPoint != appengine.GeoPoint{}) {
-		println(">>>>>>About to fetch from Google!")
+	if trail.Likeness == LikedIt {
 		trail.Tags = fetchLatLngFromGoogle(trail, context)
-
 		trail.storeTags(context, db)
 	}
-
-	println(fmt.Sprintf("The trail details is: %+v", trail))
-	println("")
 
 	if err := db.Save(&trail); err != nil {
 		println("The error: ", err.Error())
@@ -140,9 +136,11 @@ func fetchLatLngFromGoogle(trail Trail, context appengine.Context) []string {
 		ReverseGeocodeEndpoint: google.ReverseGeocodeEndpoint + "&key=AIzaSyC1O6FZtjFDSJz5zCqVbVlVOr60gDYg_Zw",
 	}
 
-	res, err := geoCoder.ReverseGeocode(trail.GeoPoint.Lat, trail.GeoPoint.Lng)
+	if (trail.GeoPoint == appengine.GeoPoint {}) { return []string{Uncategorized} }
 
-	if err != nil { return []string{"Uncategorized"} }
+	println(">>>>>>About to fetch from Google!")
+	res, err := geoCoder.ReverseGeocode(trail.GeoPoint.Lat, trail.GeoPoint.Lng)
+	if err != nil { return []string{Uncategorized} }
 
 	var address google.Address
 	google.ReadResponse(res, &address)
@@ -174,9 +172,9 @@ var Trails = struct {
 
 	ByTag:func(tagId string, account *Account) *datastore.Query {
 		return datastore.NewQuery(new(Trail).KeySpec().Kind).
-				Ancestor(account.Key()).
-				Filter("Tags=", tagId).
-				Order("-EvaluatedOn")
+		Ancestor(account.Key()).
+		Filter("Tags=", tagId).
+		Order("-EvaluatedOn")
 	},
 
 	Like: func(trailId string, db *appx.Datastore, context appengine.Context) error {
