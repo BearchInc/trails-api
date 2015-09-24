@@ -1,7 +1,7 @@
 package models
 import (
-"github.com/drborges/appx"
-"appengine/datastore"
+	"github.com/drborges/appx"
+	"appengine/datastore"
 )
 
 type TagType int
@@ -13,9 +13,11 @@ const (
 
 type Tag struct {
 	appx.Model
-	Type          TagType
-	Value         string
-	LikenessCount int
+	Type          TagType   `json:"-"`
+	Value         string    `json:"title"`
+	LikenessCount int        `json:"likeness_count"`
+	ImagePath     string    `json:"image_path"`
+	ImageProvider AuthorizationType `json:"authorization_type"`
 }
 
 func (tag *Tag) KeySpec() *appx.KeySpec {
@@ -28,11 +30,11 @@ func (tag *Tag) KeySpec() *appx.KeySpec {
 
 var Tags = struct {
 	ByAccount func(account *Account) *datastore.Query
-} {
+}{
 	ByAccount: func(account *Account) *datastore.Query {
 		return datastore.NewQuery(new(Tag).KeySpec().Kind).
-			Ancestor(account.Key()).
-			Filter("Type=", TagTypeCity).
-			Order("-LikenessCount")
+		Ancestor(account.Key()).
+		Filter("Type=", TagTypeCity).
+		Order("-LikenessCount")
 	},
 }

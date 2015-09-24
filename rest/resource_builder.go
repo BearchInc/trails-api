@@ -15,10 +15,7 @@ type TrailResource struct {
 }
 
 type TagResource struct {
-	Title         string `json:"title"`
-	LikenessCount int `json:"likeness_count"`
-	ImagePath		string `json:"image_path"`
-	AuthorizationType models.AuthorizationType `json:"authorization_type"`
+	*models.Tag
 
 	SelfPath      string `json:"self_path"`
 }
@@ -58,10 +55,7 @@ func toTagResource(item stream.T) stream.T {
 	selfPath = url.RequestURI()
 
 	return TagResource{
-		Title: tag.Value,
-		LikenessCount: tag.LikenessCount,
-		ImagePath: "http://allworldtowns.com/data_images/countries/hawaii/hawaii-09.jpg",
-		AuthorizationType: models.Url,
+		Tag: tag,
 		SelfPath: selfPath,
 	}
 }

@@ -105,6 +105,8 @@ func (trail *Trail) storeTags(context appengine.Context, db *appx.Datastore) {
 	}).Each(func(data stream.T) {
 		tag := data.(*Tag)
 		tag.SetParentKey(trail.ParentKey())
+		tag.ImagePath = trail.Path
+		tag.ImageProvider = DropBox
 		datastore.RunInTransaction(context, func(c appengine.Context) error {
 			if err := db.Load(tag); err == nil {
 				tag.LikenessCount++
