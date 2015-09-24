@@ -15,7 +15,7 @@ type TrailResource struct {
 
 type TagResource struct {
 	Title         string `json:"title"`
-	LikenessCount int `json:"LikenessCount"`
+	LikenessCount int `json:"likeness_count"`
 	ImagePath		string `json:"image_path"`
 	AuthorizationType models.AuthorizationType `json:"authorization_type"`
 
@@ -40,7 +40,7 @@ func FromTrails(trails []*models.Trail) []stream.T {
 
 func toTrailResource(item stream.T) stream.T {
 	trail := item.(*models.Trail)
-	selfPath := fmt.Sprint("/account/trails/%v", trail.EncodedKey())
+	selfPath := fmt.Sprintf("/account/trails/%v", trail.EncodedKey())
 
 	return TrailResource{
 		Trail: trail,
@@ -68,7 +68,7 @@ func FromTags(tags []*models.Tag) []stream.T {
 
 func toTagResource(item stream.T) stream.T {
 	tag := item.(*models.Tag)
-	selfPath := fmt.Sprintf("/account/trails/%v", tag.EncodedKey())
+	selfPath := fmt.Sprintf("/account/trails/%v", tag.Value)
 
 	return TagResource{
 		Title: tag.Value,

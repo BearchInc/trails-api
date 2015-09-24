@@ -77,3 +77,15 @@ func Tags(render render.Render, account *models.Account, db *appx.Datastore) {
 
 	render.JSON(http.StatusOK, rest.FromTags(tags))
 }
+
+func TagTrails(render render.Render, account *models.Account, db *appx.Datastore, log *middlewares.Logger, params martini.Params) {
+	log.Infof("Accessing stories")
+
+	var trails = make([]*models.Trail, 0)
+	if err := db.Query(models.Trails.ByTag(params[""], account)).Results(&trails); err != nil {
+		log.Errorf("The error: ", err.Error())
+		render.JSON(http.StatusInternalServerError, err)
+	}
+
+	render.JSON(http.StatusOK, trails)
+}

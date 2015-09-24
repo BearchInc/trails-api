@@ -151,6 +151,7 @@ func fetchLatLngFromGoogle(trail Trail, context appengine.Context) []string {
 var Trails = struct {
 	ByNextEvaluation func(account *Account) *datastore.Query
 	ByAccount        func(account *Account) *datastore.Query
+	ByTag            func(tagId string, account *Account) *datastore.Query
 	Like             func(trailId string, db *appx.Datastore, context appengine.Context) error
 	Dislike          func(trailId string, db *appx.Datastore, context appengine.Context) error
 
@@ -167,6 +168,13 @@ var Trails = struct {
 	ByAccount: func(account *Account) *datastore.Query {
 		return datastore.NewQuery(new(Trail).KeySpec().Kind).
 		Ancestor(account.Key())
+	},
+
+	ByTag:func(tagId string, account *Account) *datastore.Query {
+		return datastore.NewQuery(new(Trail).KeySpec().Kind).
+				Ancestor(account.Key()).
+				Filter("Tags", tagId).
+				Order("-EvaluatedOn")
 	},
 
 	Like: func(trailId string, db *appx.Datastore, context appengine.Context) error {
