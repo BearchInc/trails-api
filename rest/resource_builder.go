@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/drborges/rivers"
 	"github.com/drborges/rivers/stream"
+	"net/url"
 )
 
 type TrailResource struct {
@@ -53,6 +54,8 @@ func toTrailResource(item stream.T) stream.T {
 func toTagResource(item stream.T) stream.T {
 	tag := item.(*models.Tag)
 	selfPath := fmt.Sprintf("/account/trails/tags/%v", tag.Value)
+	url, _ := url.Parse(selfPath)
+	selfPath = url.RequestURI()
 
 	return TagResource{
 		Title: tag.Value,
