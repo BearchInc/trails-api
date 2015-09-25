@@ -11,6 +11,8 @@ const (
 	TagTypeCity
 )
 
+const TagTypeUnspecified TagType = TagTypeCity
+
 type Tag struct {
 	appx.Model
 	Type          TagType   `json:"-"`

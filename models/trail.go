@@ -92,18 +92,10 @@ func likeness(trailId string, likeness LikenessType, db *appx.Datastore, context
 func (trail *Trail) storeTags(context appengine.Context, db *appx.Datastore) {
 	extractTags := func(data stream.T) stream.T {
 		trail := data.(*Trail)
-		return []*Tag{
-			trail.City(),
-			trail.State(),
-			trail.Country(),
-		}
+		return trail.AllTags()
 	}
 
-	IfNil := func(data stream.T) bool {
-		return data == (*Tag)(nil)
-	}
-
-	err := rivers.FromData(trail).FlatMap(extractTags).Drop(IfNil).Each(func(data stream.T) {
+	err := rivers.FromData(trail).FlatMap(extractTags).Each(func(data stream.T) {
 		tag := data.(*Tag)
 		tag.SetParentKey(trail.ParentKey())
 		tag.ImagePath = trail.Path
@@ -123,13 +115,27 @@ func (trail *Trail) storeTags(context appengine.Context, db *appx.Datastore) {
 	}
 }
 
+func (trail Trail)AllTags() []*Tag {
+	if len(trail.Tags) == 1 {
+		return []*Tag{ trail.Unspecified() }
+	} else {
+		return []*Tag{
+			trail.City(),
+			trail.State(),
+			trail.Country(),
+		}
+	}
+}
+
+func (trail Trail) Unspecified() *Tag {
+	return &Tag{Type: TagTypeUnspecified, Value:trail.Tags[0]}
+}
+
 func (trail Trail) City() *Tag {
-	if len(trail.Tags) == 1 { return nil }
 	return &Tag{Type: TagTypeCity, Value:trail.Tags[TagTypeCity]}
 }
 
 func (trail Trail) State() *Tag {
-	if len(trail.Tags) == 1 { return nil }
 	return &Tag{Type: TagTypeState, Value: trail.Tags[TagTypeState]}
 }
 
