@@ -78,18 +78,13 @@ ci-deploy-staging: setup update put-app-in-go-path ci-build-info
 	$(APPCFG) --oauth2_refresh_token=$(DEPLOYMENT_TOKEN) -A staging-api-getunseen update_indexes app
 	$(APPCFG) --oauth2_refresh_token=$(DEPLOYMENT_TOKEN) -A staging-api-getunseen update app
 
+ci-deploy-production: setup update put-app-in-go-path ci-build-info
+	$(APPCFG) --oauth2_refresh_token=$(DEPLOYMENT_TOKEN) -A api-getunseen update_indexes app
+	$(APPCFG) --oauth2_refresh_token=$(DEPLOYMENT_TOKEN) -A api-getunseen update app
+
 # Deployment tasks
 deploy:
 	goapp deploy -oauth app
 
 rollback-deploy:
 	appcfg.py --oauth2_refresh_token=***REMOVED*** rollback app
-
-# Handy curls
-http-get:
-	curl -XGET https://trails-dot-staging-api-getunseen.appspot.com$(path)
-
-http-post:
-	curl -XPOST https://trails-dot-staging-api-getunseen.appspot.com$(path) \
-		-H "Content-type: application/json" \
-		-d '$(json)'
