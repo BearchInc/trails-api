@@ -54,6 +54,8 @@ update: setup
 
 	rm -rf $(GOPATH)/src/github.com/stacktic/dropbox 2> /dev/null
 	@git clone https://github.com/BearchInc/dropbox.git $(GOPATH)/src/github.com/stacktic/dropbox
+
+	rm -rf $(GOPATH)/src/github.com/drborges/geocoder 2> /dev/null
 	@git clone https://github.com/BearchInc/geocoder.git $(GOPATH)/src/github.com/drborges/geocoder
 
 delete-branches:
