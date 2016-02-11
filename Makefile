@@ -2,7 +2,7 @@
 
 .PHONY: all
 
-DEPLOYMENT_TOKEN    ?= ***REMOVED***
+DEPLOYMENT_TOKEN    ?= **REMOVED**
 SNAP_CACHE_DIR      ?= $(HOME)/.appengine-go
 APPENGINE_PATH      ?= $(SNAP_CACHE_DIR)/go_appengine
 GOPATH              ?= $(APPENGINE_PATH)/gopath
@@ -87,4 +87,4 @@ deploy:
 	goapp deploy -oauth app
 
 rollback-deploy:
-	appcfg.py --oauth2_refresh_token=***REMOVED*** rollback app
+	appcfg.py --oauth2_refresh_token=**REMOVED** rollback app
